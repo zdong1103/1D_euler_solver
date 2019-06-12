@@ -14,6 +14,7 @@ module M_pin
   type, public :: parameter_input
     ! Domain size
     integer(IP)  :: N
+    integer(IP)  :: nghost    ! # ghost cells on one side
     real(DP)     :: L
 
     ! Numerical parameter
@@ -60,6 +61,8 @@ module M_pin
         select case (var_name)
         case ("N") 
           read(value,*) this%N
+        case ("nghost")
+          read(value,*) this%nghost
         case ("L") 
           read(value,*) this%L
         case ("t") 

@@ -8,6 +8,7 @@ EXECUTABLE := $(EXE_DIR)1D_solver
 SRC_FILES  := $(wildcard src/M_precision.f90) \
 							$(wildcard src/M_pin.f90) \
 							$(wildcard src/M_domain.f90) \
+							$(wildcard src/M_spatial_recon.f90) \
 							$(wildcard src/M_output.f90) \
 							$(wildcard src/main.f90)
 

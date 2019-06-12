@@ -7,13 +7,13 @@ module M_output
   implicit none
 
   character(len=20) :: fmt_var = "(2A8,5A12)"
-  character(len=20) :: fmt_num = "(2F8.3,5F12.3)"
+  character(len=20) :: fmt_num = "(2F8.3,5F12.5)"
 
   ! ======================== Subroutines =========================
   contains
     subroutine output(this)
       implicit none
-      type(domain), intent(inout) :: this
+      type(domain), intent(in) :: this
       character(len=20) :: output_file
       character(len=5)  :: frame_num
       integer(IP)       :: i
@@ -41,9 +41,9 @@ module M_output
       end if
       
       write(1, fmt_var) "t","x","rho","U","p","rhoU","E"
-      do i = 1, this%N
-        write(1,fmt_num) this%t, this%cells(i)%x, this%cells(i)%rho, this%cells(i)%U, &
-                         &this%cells(i)%p, this%cells(i)%rhoU, this%cells(i)%E
+      do i = this%is, this%ie
+        write(1,fmt_num) this%t, this%cells(i)%x, this%cells(i)%cons(1), this%cells(i)%prim(2), &
+                         &this%cells(i)%prim(1), this%cells(i)%cons(2), this%cells(i)%cons(3)
       end do
       close(1)
 
