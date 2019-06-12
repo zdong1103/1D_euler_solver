@@ -9,6 +9,7 @@ module M_domain
   type, public :: cell
     ! Information about in this cell
     integer(IP)  :: index
+    real(DP)     :: x
 
     ! conservative variables
     real(DP)     :: rho       ! density
@@ -26,6 +27,7 @@ module M_domain
     real(DP)     :: t         ! time
     real(DP)     :: L         ! domain length
     integer(IP)  :: N         ! total # cells
+    integer(IP)  :: nstep     ! step #
 
     type(material_information), pointer  :: material_info   ! general gas parameters
     type(cell), dimension(:),   pointer  :: cells           ! cell array
@@ -41,6 +43,7 @@ module M_domain
       type(parameter_input), intent(in), target  :: pin
 
       this%index = index
+      this%x     = (index - 0.5_DP) * pin%L / pin%N
       if ( index .le. pin%N/2._DP ) then
         this%rho = pin%rho_L
         this%p   = pin%p_L
@@ -75,6 +78,7 @@ module M_domain
       this%N = pin%N
       this%L = pin%L
       this%t = 0._DP
+      this%nstep = 0_IP
       this%material_info => pin%material_info
       allocate(this%cells(pin%N))
 
@@ -96,6 +100,7 @@ module M_domain
       this%N = 0_IP
       this%L = 0._DP
       this%t = 0._DP
+      this%nstep = 0_IP
     end subroutine delete_domain
 
 end module M_domain

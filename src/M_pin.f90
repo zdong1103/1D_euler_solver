@@ -44,7 +44,7 @@ module M_pin
       implicit none
       type(parameter_input), intent(inout) :: this
       character(len=30),     intent(in)    :: filename
-      character(len=30),     dimension(20) :: string
+      character(len=30),     dimension(20) :: lines
       character(len=30)  :: var_name
       character(len=30)  :: value
       integer(IP) :: istat, i, index
@@ -52,11 +52,11 @@ module M_pin
       open(1, file=filename, status='old')
       i = 1
       do while(.true.)
-        read(1, *, iostat=istat) string(i)
-        string(i) = trim(string(i))
-        index     = scan(string(i),"=")
-        var_name  = trim(string(i)(1:index-1))
-        value     = trim(string(i)(index+1:))
+        read(1, "(A)", iostat=istat) lines(i)
+        lines(i) = trim(lines(i))
+        index     = scan(lines(i),"=")
+        var_name  = trim(lines(i)(1:index-1))
+        value     = trim(lines(i)(index+1:))
         select case (var_name)
         case ("N") 
           read(value,*) this%N
@@ -84,6 +84,7 @@ module M_pin
         if ( istat /= 0 ) exit
         i = i + 1
       end do
+      close(1)
     end subroutine init_read
 
 end module M_pin

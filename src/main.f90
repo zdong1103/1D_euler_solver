@@ -3,6 +3,7 @@ program main
   use M_precision
   use M_domain
   use M_pin
+  use M_output
   
   ! ========================= Declarations ========================
   implicit none
@@ -14,7 +15,7 @@ program main
   ! ============================= Body ============================
   call init_read(pin, filename)
   call init_domain(my_domain, pin)
-  
+  call output(my_domain)
   call delete_domain(my_domain)
 
   write (*,*) "success!"
