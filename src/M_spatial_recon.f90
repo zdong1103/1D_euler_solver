@@ -8,7 +8,6 @@ module M_spatial_recon
   
   type, public :: flux_param
     ! For all conservative variables
-    real(DP), dimension(:,:), pointer :: ri      ! r_i
     real(DP), dimension(:,:), pointer :: phi     ! phi(r_i) is the flux limiter
     real(DP), dimension(:,:), pointer :: u_RR    ! u_(i+1/2)^R
     real(DP), dimension(:,:), pointer :: u_RL    ! u_(i+1/2)^L
@@ -34,8 +33,8 @@ module M_spatial_recon
       type(flux_param), intent(inout) :: this
       type(domain),     intent(in)    :: myd   ! my_domain
       integer(IP) :: i, j
+      real(DP)    :: ri                        ! r_i
 
-      allocate(this%ri(3,myd%N))
       allocate(this%phi(3,myd%N))
       allocate(this%u_RR(3,myd%N))
       allocate(this%u_RL(3,myd%N))
@@ -50,17 +49,17 @@ module M_spatial_recon
         domain_loop_1 : do i = myd%is, myd%ie
           if ( myd%cells(i+1)%cons(j) .eq. myd%cells(i)%cons(j) ) then
             if ( myd%cells(i)%cons(j) .ge. myd%cells(i-1)%cons(j) ) then
-              this%ri(j,i) = inf
+              ri = inf
             else
-              this%ri(j,i) = -1 * inf
+              ri = -1 * inf
             endif
           else
-            this%ri(j,i) = (myd%cells(i)%cons(j) - myd%cells(i-1)%cons(j)) / &
-                          &(myd%cells(i+1)%cons(j) - myd%cells(i)%cons(j))
+            ri = (myd%cells(i)%cons(j) - myd%cells(i-1)%cons(j)) / &
+                &(myd%cells(i+1)%cons(j) - myd%cells(i)%cons(j))
           end if
 
           ! minmod flux limiter
-          this%phi(j,i) = max(0._DP, min(1._DP, this%ri(j,i)))
+          this%phi(j,i) = max(0._DP, min(1._DP, ri))
         end do domain_loop_1
       end do variable_loop_1
       
@@ -94,7 +93,6 @@ module M_spatial_recon
       implicit none
       type(flux_param), intent(inout) :: this
       
-      deallocate(this%ri)
       deallocate(this%phi)
       deallocate(this%u_RR)
       deallocate(this%u_RL)

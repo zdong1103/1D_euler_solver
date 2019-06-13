@@ -6,8 +6,8 @@ module M_output
   ! ======================== Declarations =========================
   implicit none
 
-  character(len=20) :: fmt_var = "(2A8,5A12)"
-  character(len=20) :: fmt_num = "(2F8.3,5F12.5)"
+  character(len=20) :: fmt_var = "(2A12,5A14)"
+  character(len=20) :: fmt_num = "(2F12.5,5F14.6)"
 
   ! ======================== Subroutines =========================
   contains
@@ -19,13 +19,13 @@ module M_output
       integer(IP)       :: i
       logical           :: exist
 
-      if ( this%nstep .le. 10 ) then
+      if ( this%nstep .lt. 10 ) then
         write(frame_num,"(A,I1)") '0000',this%nstep
-      elseif ( this%nstep .le. 100 ) then
+      elseif ( this%nstep .lt. 100 ) then
         write(frame_num,"(A,I2)") '000',this%nstep
-      elseif ( this%nstep .le. 1000 ) then
+      elseif ( this%nstep .lt. 1000 ) then
         write(frame_num,"(A,I3)") '00',this%nstep
-      elseif ( this%nstep .le. 10000 ) then
+      elseif ( this%nstep .lt. 10000 ) then
         write(frame_num,"(A,I4)") '0',this%nstep
       else
         write(frame_num,"(I5)") this%nstep

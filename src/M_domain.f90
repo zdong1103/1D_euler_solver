@@ -29,7 +29,7 @@ module M_domain
     integer(IP)  :: ie        ! ending cell index
     integer(IP)  :: nstep     ! step #
 
-    type(material_information), pointer  :: material_info   ! general gas parameters
+    type(material_information)           :: material_info   ! general gas parameters
     type(cell), dimension(:),   pointer  :: cells           ! cell array
 
   end type domain
@@ -63,6 +63,21 @@ module M_domain
     !! ---------------------- copy a cell ------------------------
 
     subroutine copy_cell(this, anothercell)
+      implicit none
+      type(cell),  intent(inout) :: this
+      type(cell),  intent(in)    :: anothercell
+
+      this%index   = anothercell%index
+      this%x       = anothercell%x
+      this%cons(1) = anothercell%cons(1)
+      this%cons(2) = anothercell%cons(2)
+      this%cons(3) = anothercell%cons(3)
+      this%prim(1) = anothercell%prim(1)
+      this%prim(2) = anothercell%prim(2)      
+    end subroutine copy_cell
+
+    subroutine copy_cell_info(this, anothercell)
+      implicit none
       type(cell),  intent(inout) :: this
       type(cell),  intent(in)    :: anothercell
 
@@ -70,8 +85,21 @@ module M_domain
       this%cons(2) = anothercell%cons(2)
       this%cons(3) = anothercell%cons(3)
       this%prim(1) = anothercell%prim(1)
-      this%prim(2) = anothercell%prim(2)      
-    end subroutine copy_cell
+      this%prim(2) = anothercell%prim(2)
+    end subroutine copy_cell_info
+
+    !! --------------- conservative to primitive -----------------
+
+    subroutine cons2prim(this, gamma)
+      implicit none
+      type(cell),  intent(inout) :: this
+      real(DP),    intent(in)    :: gamma
+
+      this%prim(1) = (gamma - 1._DP) * (this%cons(3) - 0.5_DP * this%cons(2) * &
+                   &  this%cons(2) / this%cons(1))
+      this%prim(2) = this%cons(2) / this%cons(1)
+
+    end subroutine cons2prim
 
     !! ----------------------- destroyer -------------------------
 
@@ -86,6 +114,7 @@ module M_domain
       this%cons(3) = 0._DP
       this%prim(1) = 0._DP
       this%prim(2) = 0._DP
+
     end subroutine delete_cell
 
     !! ------------------- initialize domain ---------------------
@@ -104,7 +133,7 @@ module M_domain
       this%L      = pin%L
       this%t      = 0._DP
       this%nstep  = 0_IP
-      this%material_info => pin%material_info
+      this%material_info%gamma = pin%material_info%gamma
 
       N_tot = pin%N + 2_IP * pin%nghost
       allocate(this%cells(N_tot))
@@ -113,6 +142,33 @@ module M_domain
         call init_cell(this%cells(i),i, pin)
       end do
     end subroutine init_domain
+
+    !! ------------------- create domain copy --------------------
+
+    subroutine copy_domain(this, anotherdomain)
+      implicit none
+      type(domain), intent(in)    :: anotherdomain
+      type(domain), intent(inout) :: this
+      integer(IP) :: i
+      integer(IP) :: N_tot
+
+      this%N      = anotherdomain%N
+      this%nghost = anotherdomain%nghost
+      this%is     = anotherdomain%is
+      this%ie     = anotherdomain%ie
+      this%L      = anotherdomain%L
+      this%t      = anotherdomain%t
+      this%nstep  = anotherdomain%nstep
+      this%material_info%gamma = anotherdomain%material_info%gamma
+
+      N_tot = this%N + 2_IP * this%nghost
+      allocate(this%cells(N_tot))
+
+      do i = 1, N_tot
+        call copy_cell(this%cells(i), anotherdomain%cells(i))
+      end do
+
+    end subroutine copy_domain
 
     !! ----------------------- destroyer -------------------------
 
@@ -135,6 +191,8 @@ module M_domain
       this%L      = 0._DP
       this%t      = 0._DP
       this%nstep  = 0_IP
+      this%material_info%gamma = 0._DP
+
     end subroutine delete_domain
 
 end module M_domain
