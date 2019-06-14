@@ -35,11 +35,11 @@ module M_spatial_recon
       integer(IP) :: i, j
       real(DP)    :: ri                        ! r_i
 
-      allocate(this%phi(3,myd%N))
-      allocate(this%u_RR(3,myd%N))
-      allocate(this%u_RL(3,myd%N))
-      allocate(this%u_LR(3,myd%N))
-      allocate(this%u_LL(3,myd%N))
+      allocate(this%phi(3,myd%N_tot))
+      allocate(this%u_RR(3,myd%N_tot))
+      allocate(this%u_RL(3,myd%N_tot))
+      allocate(this%u_LR(3,myd%N_tot))
+      allocate(this%u_LL(3,myd%N_tot))
 
       ! ------------------------------------------------------------
       ! r_i = (u_i - u_i-1) / (u_i+1 - u_i)
@@ -60,7 +60,7 @@ module M_spatial_recon
 
           ! minmod flux limiter
           this%phi(j,i) = max(0._DP, min(1._DP, ri))
-          ! write (*,*) "phi (", j, ",", i, ") ", this%phi(j,i)
+          write (*,*) "phi (", j, ",", i, ") ", this%phi(j,i)
         end do domain_loop_1
       end do variable_loop_1
       
@@ -149,10 +149,10 @@ module M_spatial_recon
       gamma = myd%material_info%gamma
       call calc_flux_param(myf,myd)
 
-      allocate(this%a_R(myd%N))
-      allocate(this%a_L(myd%N))
-      allocate(this%F_R(3,myd%N))
-      allocate(this%F_L(3,myd%N))
+      allocate(this%a_R(myd%N_tot))
+      allocate(this%a_L(myd%N_tot))
+      allocate(this%F_R(3,myd%N_tot))
+      allocate(this%F_L(3,myd%N_tot))
 
       ! ------------------------------------------------------------
       ! a_(i+-1/2) = max[eigenvalue(dF_(i+-1/2)^R/du), eigenvalue(dF_(i+-1/2)^L/du)]
@@ -167,14 +167,9 @@ module M_spatial_recon
 
         this%a_R(i) = max(myf%u_RR(2,i)/myf%u_RR(1,i) + a_RR, myf%u_RL(2,i)/myf%u_RL(1,i) + a_RL)
         this%a_L(i) = max(myf%u_LR(2,i)/myf%u_LR(1,i) + a_LR, myf%u_LL(2,i)/myf%u_LL(1,i) + a_LL)
-
-        ! if ( i .eq. 101) then
-        !   write (*,*) "a_RR, a_RL, a_LR, a_LL, a_R, a_L"
-        !   write (*,*) a_RR, a_RL, a_LR, a_LL, this%a_R(i), this%a_L(i)
-        ! end if
       end do
 
-      ! write (*,*) "-----------------------------------------------"
+      write (*,*) "-----------------------------------------------"
       variable_loop : do j = 1, 3
         domain_loop : do i = myd%is, myd%ie
           select case (j) ! (1,2,3) => (rho, rhoU, E)
@@ -201,13 +196,9 @@ module M_spatial_recon
           ! F_(1-1/2)* = 0.5 * (F(u_(i-1/2)^R) + F(u_(i-1/2)^L)) 
           !              - a_(i-1/2) * (u_(i-1/2)^R - u_(i-1/2)^L)
           ! ------------------------------------------------------------
-          ! if ( i .eq. 101 ) then
-          !   write (*,*) "F_RR, F_RL, a_R, u_RR, u_RL"
-          !   write (*,*) F_RR, F_LL, this%a_R(i), myf%u_RR(j,i), myf%u_RL(j,i)
-          ! end if
           this%F_R(j,i) = 0.5_DP * ((F_RR + F_RL) - this%a_R(i) * (myf%u_RR(j,i) - myf%u_RL(j,i)))
           this%F_L(j,i) = 0.5_DP * ((F_LR + F_LL) - this%a_L(i) * (myf%u_LR(j,i) - myf%u_LL(j,i)))
-          ! write (*,*) "F_R, F_L (", j, ",", i, ") ", this%F_R(j,i), this%F_L(j,i)
+          write (*,*) "F_R, F_L (", j, ",", i, ") ", this%F_R(j,i), this%F_L(j,i)
         end do domain_loop
       end do variable_loop
 

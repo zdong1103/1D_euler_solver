@@ -25,6 +25,7 @@ module M_domain
     real(DP)     :: L         ! domain length
     integer(IP)  :: N         ! # cells
     integer(IP)  :: nghost    ! # ghost cells on each side
+    integer(IP)  :: N_tot     ! # cells + 2 * # ghost cells
     integer(IP)  :: is        ! starting cell index
     integer(IP)  :: ie        ! ending cell index
     integer(IP)  :: nstep     ! step #
@@ -128,6 +129,7 @@ module M_domain
 
       this%N      = pin%N
       this%nghost = pin%nghost
+      this%N_tot  = pin%N + 2_IP * pin%nghost
       this%is     = pin%nghost + 1_IP
       this%ie     = this%is + this%N - 1_IP
       this%L      = pin%L
@@ -135,10 +137,9 @@ module M_domain
       this%nstep  = 0_IP
       this%material_info%gamma = pin%material_info%gamma
 
-      N_tot = pin%N + 2_IP * pin%nghost
-      allocate(this%cells(N_tot))
+      allocate(this%cells(this%N_tot))
 
-      do i = 1, N_tot
+      do i = 1, this%N_tot
         call init_cell(this%cells(i),i, pin)
       end do
     end subroutine init_domain
@@ -150,10 +151,10 @@ module M_domain
       type(domain), intent(in)    :: anotherdomain
       type(domain), intent(inout) :: this
       integer(IP) :: i
-      integer(IP) :: N_tot
 
       this%N      = anotherdomain%N
       this%nghost = anotherdomain%nghost
+      this%N_tot  = anotherdomain%N_tot
       this%is     = anotherdomain%is
       this%ie     = anotherdomain%ie
       this%L      = anotherdomain%L
@@ -161,10 +162,9 @@ module M_domain
       this%nstep  = anotherdomain%nstep
       this%material_info%gamma = anotherdomain%material_info%gamma
 
-      N_tot = this%N + 2_IP * this%nghost
-      allocate(this%cells(N_tot))
+      allocate(this%cells(this%N_tot))
 
-      do i = 1, N_tot
+      do i = 1, this%N_tot
         call copy_cell(this%cells(i), anotherdomain%cells(i))
       end do
 
@@ -176,16 +176,15 @@ module M_domain
       implicit none
       type(domain), intent(inout) :: this
       integer(IP) :: i
-      integer(IP) :: N_tot
 
-      N_tot = this%N + 2_IP * this%nghost
-      do i = 1, N_tot
+      do i = 1, this%N_tot
         call delete_cell(this%cells(i))
       end do
 
       deallocate(this%cells)
       this%N      = 0_IP
       this%nghost = 0_IP
+      this%N_tot  = 0_IP
       this%is     = 0_IP
       this%ie     = 0_IP
       this%L      = 0._DP
