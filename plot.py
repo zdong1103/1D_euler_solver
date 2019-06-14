@@ -14,13 +14,14 @@ set format y "%.4g"
 
 set ylabel "rho"
 set yrange [:1.02]
+set xrange [0:1]
 set xlabel "x"
-plot "./output/out.00048.dat" u 2:3 w lines ls 1 notitle
+plot "./output/out.00333.dat" u 2:3 w lines ls 1 notitle
 
 set ylabel "U"
 unset yrange
-plot "./output/out.00048.dat" u 2:4 w lines ls 1 notitle
+plot "./output/out.00333.dat" u 2:4 w lines ls 1 notitle
 
 set ylabel "p"
-set yrange [:1.02]
-plot "./output/out.00048.dat" u 2:5 w lines ls 1 notitle
+set yrange [0.08:1.02]
+plot "./output/out.00333.dat" u 2:5 w lines ls 1 notitle

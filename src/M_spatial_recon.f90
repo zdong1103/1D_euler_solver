@@ -60,7 +60,6 @@ module M_spatial_recon
 
           ! minmod flux limiter
           this%phi(j,i) = max(0._DP, min(1._DP, ri))
-          write (*,*) "phi (", j, ",", i, ") ", this%phi(j,i)
         end do domain_loop_1
       end do variable_loop_1
       
@@ -153,7 +152,6 @@ module M_spatial_recon
       allocate(this%a_L(myd%N_tot))
       allocate(this%F_R(3,myd%N_tot))
       allocate(this%F_L(3,myd%N_tot))
-      write (*,*) "-----------------------------------------------"
 
       ! ------------------------------------------------------------
       ! a_(i+-1/2) = max[eigenvalue(dF_(i+-1/2)^R/du), eigenvalue(dF_(i+-1/2)^L/du)]
@@ -168,17 +166,16 @@ module M_spatial_recon
 
         this%a_R(i) = max(myf%u_RR(2,i)/myf%u_RR(1,i) + a_RR, myf%u_RL(2,i)/myf%u_RL(1,i) + a_RL)
         this%a_L(i) = max(myf%u_LR(2,i)/myf%u_LR(1,i) + a_LR, myf%u_LL(2,i)/myf%u_LL(1,i) + a_LL)
-        write (*,*) "a_R, a_L (", i, ") ", this%a_R(i), this%a_L(i)
       end do
 
       variable_loop : do j = 1, 3
         domain_loop : do i = myd%is, myd%ie
           select case (j) ! (1,2,3) => (rho, rhoU, E)
           case (1)
-            F_RR = myf%u_RR(1,i)
-            F_RL = myf%u_RL(1,i)
-            F_LR = myf%u_LR(1,i)
-            F_LL = myf%u_LL(1,i)
+            F_RR = myf%u_RR(2,i)
+            F_RL = myf%u_RL(2,i)
+            F_LR = myf%u_LR(2,i)
+            F_LL = myf%u_LL(2,i)
           case (2)
             call momentum_flux(myf%u_RR(1,i), myf%u_RR(2,i), myf%u_RR(3,i), gamma, F_RR)
             call momentum_flux(myf%u_RL(1,i), myf%u_RL(2,i), myf%u_RL(3,i), gamma, F_RL)
@@ -199,7 +196,6 @@ module M_spatial_recon
           ! ------------------------------------------------------------
           this%F_R(j,i) = 0.5_DP * ((F_RR + F_RL) - this%a_R(i) * (myf%u_RR(j,i) - myf%u_RL(j,i)))
           this%F_L(j,i) = 0.5_DP * ((F_LR + F_LL) - this%a_L(i) * (myf%u_LR(j,i) - myf%u_LL(j,i)))
-          ! write (*,*) "F_R, F_L (", j, ",", i, ") ", this%F_R(j,i), this%F_L(j,i)
         end do domain_loop
       end do variable_loop
 
