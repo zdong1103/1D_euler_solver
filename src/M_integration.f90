@@ -53,7 +53,7 @@ module M_integration
       variable_loop_k1: do j = 1, 3
         domain_loop_k1: do i = myd%is, myd%ie
 
-          k1(j,i) = dt * (- myd%L / myd%N ) * (F%F_R(j,i) - F%F_L(j,i))
+          k1(j,i) = dt * (- myd%N / myd%L ) * (F%F_R(j,i) - F%F_L(j,i))
 
           pseudo%cells(i)%cons(j) = pseudo%cells(i)%cons(j) + k1(j,i) / 2._DP
 
@@ -76,7 +76,7 @@ module M_integration
       variable_loop_k2: do j = 1, 3
         domain_loop_k2: do i = myd%is, myd%ie
 
-          k2(j,i) = dt * (- myd%L / myd%N ) * (F%F_R(j,i) - F%F_L(j,i))
+          k2(j,i) = dt * (- myd%N / myd%L ) * (F%F_R(j,i) - F%F_L(j,i))
 
           myd%cells(i)%cons(j) = myd%cells(i)%cons(j) + k2(j,i)
 
