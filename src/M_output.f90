@@ -41,7 +41,7 @@ module M_output
       end if
       
       write(1, fmt_var) "t","x","rho","U","p","rhoU","E"
-      do i = 1, (this%N + 2 * this%nghost)
+      do i = 1, this%N_tot
         write(1,fmt_num) this%t, this%cells(i)%x, this%cells(i)%cons(1), this%cells(i)%prim(2), &
                          &this%cells(i)%prim(1), this%cells(i)%cons(2), this%cells(i)%cons(3)
       end do

@@ -43,26 +43,29 @@ module M_integration
       real(DP), intent(in)    :: dt
       integer(IP) :: i, j
 
-      allocate(k1(3,myd%N))
-      allocate(k2(3,myd%N))
+      allocate(k1(3,myd%N_tot))
+      allocate(k2(3,myd%N_tot))
 
       ! k1 = dt * f(u,t)
       call calc_flux(F, myd)
       call copy_domain(pseudo, myd)
 
       variable_loop_k1: do j = 1, 3
-        domain_loop_k1: do i = 1, myd%N
+        domain_loop_k1: do i = myd%is, myd%ie
+
           k1(j,i) = dt * (- myd%L / myd%N ) * (F%F_R(j,i) - F%F_L(j,i))
-          pseudo%cells(i+myd%nghost)%cons(j) = pseudo%cells(i+myd%nghost)%cons(j) &
-                                           & + k1(j,i) / 2._DP
-          call cons2prim(pseudo%cells(i+myd%nghost), myd%material_info%gamma)
+
+          pseudo%cells(i)%cons(j) = pseudo%cells(i)%cons(j) + k1(j,i) / 2._DP
+
+          call cons2prim(pseudo%cells(i), myd%material_info%gamma)
+
         end do domain_loop_k1
       end do variable_loop_k1
 
       ! update ghost cells
       do i = 1, myd%nghost
         call copy_cell_info(pseudo%cells(i), pseudo%cells(1+myd%nghost))
-        call copy_cell_info(pseudo%cells(i+myd%N), pseudo%cells(myd%N+myd%nghost))
+        call copy_cell_info(pseudo%cells(myd%N_tot-i+1), pseudo%cells(myd%N+myd%nghost))
       end do
 
       call clear_flux(F)
@@ -71,18 +74,21 @@ module M_integration
       call calc_flux(F, pseudo)
 
       variable_loop_k2: do j = 1, 3
-        domain_loop_k2: do i = 1, myd%N
+        domain_loop_k2: do i = myd%is, myd%ie
+
           k2(j,i) = dt * (- myd%L / myd%N ) * (F%F_R(j,i) - F%F_L(j,i))
-          myd%cells(i+myd%nghost)%cons(j) = myd%cells(i+myd%nghost)%cons(j) &
-                                        & + k2(j,i)
-          call cons2prim(myd%cells(i+myd%nghost), myd%material_info%gamma)
+
+          myd%cells(i)%cons(j) = myd%cells(i)%cons(j) + k2(j,i)
+
+          call cons2prim(myd%cells(i), myd%material_info%gamma)
+
         end do domain_loop_k2
       end do variable_loop_k2
 
       ! update ghost cells
       do i = 1, myd%nghost
         call copy_cell_info(myd%cells(i), myd%cells(1+myd%nghost))
-        call copy_cell_info(myd%cells(i+myd%N+myd%nghost), myd%cells(myd%N+myd%nghost))
+        call copy_cell_info(myd%cells(myd%N_tot-i+1), myd%cells(myd%N+myd%nghost))
       end do
 
       myd%t = myd%t + dt
