@@ -29,7 +29,7 @@ program main
       dt = Time - my_domain%t
     end if
 
-    write(*,"(A, I3, A, E10.3)") "cycle = ", my_domain%nstep+1, "  dt = ", dt
+    write(*,"(A, I3, A, E9.3, A, E9.3)") "cycle = ", my_domain%nstep+1, "  dt = ", dt, "  t = ", my_domain%t
     call integrate_step(my_domain, dt)
     call output(my_domain)
   end do

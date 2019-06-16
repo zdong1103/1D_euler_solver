@@ -1,6 +1,6 @@
 # 1D_euler_solver
 
-M_precision.f90     : specify precisions and infinity
+M_parameter.f90     : specify precisions and material information
 
 M_pin.f90           : read parameter input
 
