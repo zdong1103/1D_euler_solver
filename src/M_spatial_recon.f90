@@ -1,6 +1,6 @@
 module M_spatial_recon
   ! ======================= Include Modules =======================
-  use M_precision
+  use M_parameter
   use M_domain
 
   ! ========================= Declarations ========================
@@ -103,34 +103,37 @@ module M_spatial_recon
 
     !! ----------------- calculate momentum flux ------------------
 
-    subroutine momentum_flux(rho, rhoU, E, gamma, MomFlux)
+    subroutine momentum_flux(rho, rhoU, E, mif, MomFlux)
       implicit none
-      real(DP), intent(in)  :: rho, rhoU, E, gamma
+      type(material_information), intent(in)  :: mif
+      real(DP), intent(in)  :: rho, rhoU, E
       real(DP), intent(out) :: MomFlux
       
       ! conservation of momentum
-      MomFlux = 0.5_DP * (3._DP - gamma) * rhoU * rhoU / rho + (gamma - 1._DP) * E
+      MomFlux = 0.5_DP * (3._DP - mif%gamma) * rhoU * rhoU / rho + (mif%gamma - 1._DP) * E
     end subroutine momentum_flux
 
     !! ------------------ calculate energy flux -------------------
 
-    subroutine energy_flux(rho, rhoU, E, gamma, EFlux)
+    subroutine energy_flux(rho, rhoU, E, mif, EFlux)
       implicit none
-      real(DP), intent(in)  :: rho, rhoU, E, gamma
+      type(material_information), intent(in)  :: mif
+      real(DP), intent(in)  :: rho, rhoU, E
       real(DP), intent(out) :: EFlux
 
       !conservation of energy
-      EFlux = gamma * rhoU * E / rho - 0.5_DP * (gamma - 1._DP) * rhoU * rhoU * rhoU / rho / rho
+      EFlux = mif%gamma * rhoU * E / rho - 0.5_DP * (mif%gamma - 1._DP) * rhoU * rhoU * rhoU / rho / rho
     end subroutine energy_flux
 
     !! ------------------ calculate sound speed -------------------
 
-    subroutine sound_speed(rho, rhoU, E, gamma, a)
+    subroutine sound_speed(rho, rhoU, E, mif, a)
       implicit none
-      real(DP), intent(in)  :: rho, rhoU, E, gamma
+      type(material_information), intent(in)  :: mif
+      real(DP), intent(in)  :: rho, rhoU, E
       real(DP), intent(out) :: a
 
-      a = sqrt(gamma * (gamma - 1._DP) * (E - 0.5_DP * rhoU * rhoU / rho) / rho)
+      a = sqrt(mif%gamma * (mif%gamma - 1._DP) * (E - 0.5_DP * rhoU * rhoU / rho) / rho)
     end subroutine sound_speed
 
     !! -------------------- calculate fluxes ----------------------
@@ -140,12 +143,10 @@ module M_spatial_recon
       type(domain),     intent(in)    :: myd    ! my_domain
       type(flux_param)                :: myf    ! my_flux_param
       integer(IP) :: i, j
-      real(DP)    :: gamma
       real(DP)    :: a_RR, a_RL, a_LR, a_LL
       real(DP)    :: F_RR, F_RL, F_LR, F_LL     ! F(u_(i+1/2)^R), F(u_(i+1/2)^L)
                                                 ! F(u_(i-1/2)^R), F(u_(i-1/2)^L)
       
-      gamma = myd%material_info%gamma
       call calc_flux_param(myf,myd)
 
       allocate(this%a_R(myd%N_tot))
@@ -159,10 +160,10 @@ module M_spatial_recon
       ! a (sound speed) = sqrt(gamma*p/rho)
       ! ------------------------------------------------------------
       do i = myd%is, myd%ie
-        call sound_speed(myf%u_RR(1,i), myf%u_RR(2,i), myf%u_RR(3,i), gamma, a_RR)
-        call sound_speed(myf%u_RL(1,i), myf%u_RL(2,i), myf%u_RL(3,i), gamma, a_RL)
-        call sound_speed(myf%u_LR(1,i), myf%u_LR(2,i), myf%u_LR(3,i), gamma, a_LR)
-        call sound_speed(myf%u_LL(1,i), myf%u_LL(2,i), myf%u_LL(3,i), gamma, a_LL)
+        call sound_speed(myf%u_RR(1,i), myf%u_RR(2,i), myf%u_RR(3,i), myd%mif, a_RR)
+        call sound_speed(myf%u_RL(1,i), myf%u_RL(2,i), myf%u_RL(3,i), myd%mif, a_RL)
+        call sound_speed(myf%u_LR(1,i), myf%u_LR(2,i), myf%u_LR(3,i), myd%mif, a_LR)
+        call sound_speed(myf%u_LL(1,i), myf%u_LL(2,i), myf%u_LL(3,i), myd%mif, a_LL)
 
         this%a_R(i) = max(myf%u_RR(2,i)/myf%u_RR(1,i) + a_RR, myf%u_RL(2,i)/myf%u_RL(1,i) + a_RL)
         this%a_L(i) = max(myf%u_LR(2,i)/myf%u_LR(1,i) + a_LR, myf%u_LL(2,i)/myf%u_LL(1,i) + a_LL)
@@ -177,15 +178,15 @@ module M_spatial_recon
             F_LR = myf%u_LR(2,i)
             F_LL = myf%u_LL(2,i)
           case (2)
-            call momentum_flux(myf%u_RR(1,i), myf%u_RR(2,i), myf%u_RR(3,i), gamma, F_RR)
-            call momentum_flux(myf%u_RL(1,i), myf%u_RL(2,i), myf%u_RL(3,i), gamma, F_RL)
-            call momentum_flux(myf%u_LR(1,i), myf%u_LR(2,i), myf%u_LR(3,i), gamma, F_LR)
-            call momentum_flux(myf%u_LL(1,i), myf%u_LL(2,i), myf%u_LL(3,i), gamma, F_LL)
+            call momentum_flux(myf%u_RR(1,i), myf%u_RR(2,i), myf%u_RR(3,i), myd%mif, F_RR)
+            call momentum_flux(myf%u_RL(1,i), myf%u_RL(2,i), myf%u_RL(3,i), myd%mif, F_RL)
+            call momentum_flux(myf%u_LR(1,i), myf%u_LR(2,i), myf%u_LR(3,i), myd%mif, F_LR)
+            call momentum_flux(myf%u_LL(1,i), myf%u_LL(2,i), myf%u_LL(3,i), myd%mif, F_LL)
           case (3)
-            call energy_flux(myf%u_RR(1,i), myf%u_RR(2,i), myf%u_RR(3,i), gamma, F_RR)
-            call energy_flux(myf%u_RL(1,i), myf%u_RL(2,i), myf%u_RL(3,i), gamma, F_RL)
-            call energy_flux(myf%u_LR(1,i), myf%u_LR(2,i), myf%u_LR(3,i), gamma, F_LR)
-            call energy_flux(myf%u_LL(1,i), myf%u_LL(2,i), myf%u_LL(3,i), gamma, F_LL)
+            call energy_flux(myf%u_RR(1,i), myf%u_RR(2,i), myf%u_RR(3,i), myd%mif, F_RR)
+            call energy_flux(myf%u_RL(1,i), myf%u_RL(2,i), myf%u_RL(3,i), myd%mif, F_RL)
+            call energy_flux(myf%u_LR(1,i), myf%u_LR(2,i), myf%u_LR(3,i), myd%mif, F_LR)
+            call energy_flux(myf%u_LL(1,i), myf%u_LL(2,i), myf%u_LL(3,i), myd%mif, F_LL)
           end select
 
           ! ------------------------------------------------------------

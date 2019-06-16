@@ -1,6 +1,6 @@
 module M_output
   ! ======================= Include Modules =======================
-  use M_precision
+  use M_parameter
   use M_domain
 
   ! ======================== Declarations =========================

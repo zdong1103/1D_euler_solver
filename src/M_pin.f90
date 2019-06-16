@@ -1,20 +1,14 @@
 module M_pin
   ! ======================= Include Modules =======================
-  use M_precision
+  use M_parameter
 
   ! ======================== Declarations =========================
   implicit none
 
-  type, public :: material_information
-    real(DP)     :: gamma
-    real(DP)     :: R  = 8.3144598_DP
-    real(DP)     :: PI = 3.141592654_DP
-  end type material_information
-
   type, public :: parameter_input
     ! Domain size
     integer(IP)  :: N
-    integer(IP)  :: nghost    ! # ghost cells on one side
+    integer(IP)  :: nghost      ! # ghost cells on one side
     real(DP)     :: L
 
     ! Numerical parameter
@@ -32,7 +26,7 @@ module M_pin
     real(DP)     :: U_R         ! velocity
     real(DP)     :: rho_R       ! density
 
-    type(material_information) :: material_info
+    type(material_information) :: mif
 
     ! contains
     !   procedure  :: init   => init_read
@@ -82,7 +76,7 @@ module M_pin
         case ("rho_R")
           read(value,*) this%rho_R
         case ("gamma")
-          read(value,*) this%material_info%gamma
+          read(value,*) this%mif%gamma
         end select
         if ( istat /= 0 ) exit
         i = i + 1

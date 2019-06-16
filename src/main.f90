@@ -1,6 +1,6 @@
 program main
   ! ======================= Include Modules =======================
-  use M_precision
+  use M_parameter
   use M_domain
   use M_pin
   use M_output

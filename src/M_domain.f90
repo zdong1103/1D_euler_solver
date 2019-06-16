@@ -1,6 +1,6 @@
 module M_domain
   ! ======================= Include Modules =======================
-  use M_precision
+  use M_parameter
   use M_pin
 
   ! ======================== Declarations =========================
@@ -12,10 +12,12 @@ module M_domain
     real(DP)     :: x
 
     ! conservative variables
-    real(DP), dimension(3) :: cons  ! (1,2,3) => (rho, rhoU, E)
+    ! (1,2,3,4,5,6) => [(Arho)_g, (ArhoU)_g, (AE)_g, A_s, (ArhoU)_s, (AE)_s]
+    real(DP), dimension(3) :: cons  
 
     ! primitive variables
-    real(DP), dimension(2) :: prim  ! (1,2) => (p, U)
+    ! (1,2,3,4,5,6,7,8) => (A_g, rho_g, p_g, U_g, E_g, rho_s, p_s, U_s, E_s)
+    real(DP), dimension(2) :: prim  
 
   end type cell
   
@@ -30,8 +32,8 @@ module M_domain
     integer(IP)  :: ie        ! ending cell index
     integer(IP)  :: nstep     ! step #
 
-    type(material_information)           :: material_info   ! general gas parameters
-    type(cell), dimension(:),   pointer  :: cells           ! cell array
+    type(material_information)           :: mif   ! general gas parameters
+    type(cell), dimension(:),   pointer  :: cells ! cell array
 
   end type domain
 
@@ -57,7 +59,7 @@ module M_domain
         this%prim(2) = pin%U_R
       end if
       this%cons(2) = this%cons(1) * this%prim(2)
-      this%cons(3) = this%prim(1) / (pin%material_info%gamma - 1._DP) + 0.5_DP * &
+      this%cons(3) = this%prim(1) / (pin%mif%gamma - 1._DP) + 0.5_DP * &
                     &this%cons(1) * this%prim(2) * this%prim(2)
     end subroutine init_cell
 
@@ -91,12 +93,12 @@ module M_domain
 
     !! --------------- conservative to primitive -----------------
 
-    subroutine cons2prim(this, gamma)
+    subroutine cons2prim(this, mif)
       implicit none
-      type(cell),  intent(inout) :: this
-      real(DP),    intent(in)    :: gamma
+      type(cell), intent(inout) :: this
+      type(material_information), intent(in)  :: mif
 
-      this%prim(1) = (gamma - 1._DP) * (this%cons(3) - 0.5_DP * this%cons(2) * &
+      this%prim(1) = (mif%gamma - 1._DP) * (this%cons(3) - 0.5_DP * this%cons(2) * &
                    &  this%cons(2) / this%cons(1))
       this%prim(2) = this%cons(2) / this%cons(1)
 
@@ -135,7 +137,7 @@ module M_domain
       this%L      = pin%L
       this%t      = 0._DP
       this%nstep  = 0_IP
-      this%material_info%gamma = pin%material_info%gamma
+      this%mif%gamma = pin%mif%gamma
 
       allocate(this%cells(this%N_tot))
 
@@ -160,7 +162,7 @@ module M_domain
       this%L      = anotherdomain%L
       this%t      = anotherdomain%t
       this%nstep  = anotherdomain%nstep
-      this%material_info%gamma = anotherdomain%material_info%gamma
+      this%mif%gamma = anotherdomain%mif%gamma
 
       allocate(this%cells(this%N_tot))
 
@@ -190,7 +192,7 @@ module M_domain
       this%L      = 0._DP
       this%t      = 0._DP
       this%nstep  = 0_IP
-      this%material_info%gamma = 0._DP
+      this%mif%gamma = 0._DP
 
     end subroutine delete_domain
 

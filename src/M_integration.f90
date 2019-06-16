@@ -1,6 +1,6 @@
 module M_integration
   ! ======================= Include Modules =======================
-  use M_precision
+  use M_parameter
   use M_pin
   use M_domain
   use M_spatial_recon
@@ -22,7 +22,7 @@ module M_integration
 
       do i = myd%is, myd%ie
         call sound_speed(myd%cells(i)%cons(1), myd%cells(i)%cons(2), myd%cells(i)%cons(3), &
-                        &myd%material_info%gamma, a_new)
+                        &myd%mif, a_new)
         if ( a_new .gt. a) then
           a = a_new
         end if
@@ -57,7 +57,7 @@ module M_integration
 
           pseudo%cells(i)%cons(j) = pseudo%cells(i)%cons(j) + k1(j,i) / 2._DP
 
-          call cons2prim(pseudo%cells(i), myd%material_info%gamma)
+          call cons2prim(pseudo%cells(i), myd%mif)
 
         end do domain_loop_k1
       end do variable_loop_k1
@@ -80,7 +80,7 @@ module M_integration
 
           myd%cells(i)%cons(j) = myd%cells(i)%cons(j) + k2(j,i)
 
-          call cons2prim(myd%cells(i), myd%material_info%gamma)
+          call cons2prim(myd%cells(i), myd%mif)
 
         end do domain_loop_k2
       end do variable_loop_k2
