@@ -9,12 +9,12 @@ module M_parameter
   integer,  parameter :: SP  = 4
   integer,  parameter :: DP  = 8
   real,     parameter :: inf = huge(DP)
-  real(DP), parameter :: R  = 8.31446261815324
-  real(DP), parameter :: PI = 3.14159265358979
+  real(DP), parameter :: R  = 8.31446261815324   ! not used now
+  real(DP), parameter :: PI = 3.14159265358979   ! not used now
 
   type, public :: material_information
     real(DP)     :: gamma
-    real(DP)     :: rho_s
+    real(DP)     :: rho_s      ! ignore this
   end type material_information
 
   ! ============================= Body ============================

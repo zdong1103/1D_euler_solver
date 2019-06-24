@@ -14,11 +14,11 @@ module M_domain
     real(DP)     :: x
 
     ! conservative variables
-    ! (1,2,3,4,5,6) => [(Arho)_g, (ArhoU)_g, (AE)_g, A_s, (ArhoU)_s, (AE)_s]
+    ! (1,2,3) => (rho, rhoU, E)
     real(DP), dimension(3) :: cons  
 
     ! primitive variables
-    ! (1,2,3,4,5,6,7,8) => (A_g, rho_g, p_g, U_g, E_g, p_s, U_s, E_s)
+    ! (1,2) => (p,U)
     real(DP), dimension(2) :: prim  
 
   end type cell
