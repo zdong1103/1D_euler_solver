@@ -1,3 +1,5 @@
+# written by Zhenyang Dong
+
 GF := gfortran
 GFFLAGS := -o3 -std=f95
 
