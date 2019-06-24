@@ -1,4 +1,4 @@
-# 1D_euler_solver
+# 1D_euler_solver 
 
 M_parameter.f90     : specify precisions and material information
 
@@ -11,3 +11,5 @@ M_output.f90        : file output
 M_spatial_recon.f90 : spatial reconstruction, calculate fluxes
 
 M_integration.f90   : RK2 integrate time step
+
+sod tube result is good

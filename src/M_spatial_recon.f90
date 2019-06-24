@@ -1,3 +1,5 @@
+! Written by Zhenyang DONG
+
 module M_spatial_recon
   ! ======================= Include Modules =======================
   use M_parameter
@@ -124,17 +126,6 @@ module M_spatial_recon
       !conservation of energy
       EFlux = mif%gamma * rhoU * E / rho - 0.5_DP * (mif%gamma - 1._DP) * rhoU * rhoU * rhoU / rho / rho
     end subroutine energy_flux
-
-    !! ------------------ calculate sound speed -------------------
-
-    subroutine sound_speed(rho, rhoU, E, mif, a)
-      implicit none
-      type(material_information), intent(in)  :: mif
-      real(DP), intent(in)  :: rho, rhoU, E
-      real(DP), intent(out) :: a
-
-      a = sqrt(mif%gamma * (mif%gamma - 1._DP) * (E - 0.5_DP * rhoU * rhoU / rho) / rho)
-    end subroutine sound_speed
 
     !! -------------------- calculate fluxes ----------------------
 

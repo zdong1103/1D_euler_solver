@@ -1,4 +1,5 @@
-# Gnuplot file
+# Written by Zhenyang DONG
+# Gnuplot file 
 
 set terminal qt size 1000,300 enhanced persist font "Times New Roman,16"
 set multiplot layout 1,3

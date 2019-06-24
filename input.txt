@@ -2,7 +2,7 @@ N = 400
 nghost = 2
 L = 1.0
 t = 0.2
-CFL = 0.3
+CFL = 0.5
 gamma = 1.4
 
 p_L = 1.0
